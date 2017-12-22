@@ -8,7 +8,15 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol TPKeyboardAvoidingScrollViewDelegate <NSObject>
+- (CGFloat)TPKeyboardAvoiding_scrollView:(UIScrollView*)scrollView
+                      idealOffsetForView:(UIView*)view
+                   withViewingAreaHeight:(CGFloat)viewableHeight;
+@end
+
 @interface UIScrollView (TPKeyboardAvoidingAdditions)
+@property (nonatomic, weak) id<TPKeyboardAvoidingScrollViewDelegate> TPKeyboardAvoiding_delegate;
+
 - (BOOL)TPKeyboardAvoiding_focusNextTextField;
 - (void)TPKeyboardAvoiding_scrollToActiveTextField;
 

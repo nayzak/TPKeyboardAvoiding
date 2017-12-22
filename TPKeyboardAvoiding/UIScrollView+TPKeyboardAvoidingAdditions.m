@@ -16,6 +16,7 @@ static const CGFloat kMinimumScrollOffsetPadding = 20;
 static NSString * const kUIKeyboardAnimationDurationUserInfoKey = @"UIKeyboardAnimationDurationUserInfoKey";
 
 static const int kStateKey;
+static const int kDelegateKey;
 
 #define _UIKeyboardFrameEndUserInfoKey (&UIKeyboardFrameEndUserInfoKey != NULL ? UIKeyboardFrameEndUserInfoKey : @"UIKeyboardBoundsUserInfoKey")
 
@@ -32,6 +33,14 @@ static const int kStateKey;
 @end
 
 @implementation UIScrollView (TPKeyboardAvoidingAdditions)
+
+- (void)setTPKeyboardAvoiding_delegate:(id<TPKeyboardAvoidingScrollViewDelegate>)delegate {
+    objc_setAssociatedObject(self, &kDelegateKey, delegate, OBJC_ASSOCIATION_ASSIGN);
+}
+
+- (id<TPKeyboardAvoidingScrollViewDelegate>)TPKeyboardAvoiding_delegate {
+    return objc_getAssociatedObject(self, &kDelegateKey);
+}
 
 - (TPKeyboardAvoidingState*)keyboardAvoidingState {
     TPKeyboardAvoidingState *state = objc_getAssociatedObject(self, &kStateKey);
@@ -344,6 +353,17 @@ static const int kStateKey;
 }
 
 -(CGFloat)TPKeyboardAvoiding_idealOffsetForView:(UIView *)view withViewingAreaHeight:(CGFloat)viewAreaHeight {
+    id<TPKeyboardAvoidingScrollViewDelegate> delegate = self.TPKeyboardAvoiding_delegate;
+    SEL selector = @selector(TPKeyboardAvoiding_scrollView:idealOffsetForView:withViewingAreaHeight:);
+    if (delegate && [delegate respondsToSelector:selector]) {
+        CGFloat offset = [delegate TPKeyboardAvoiding_scrollView:self
+                                              idealOffsetForView:view
+                                           withViewingAreaHeight:viewAreaHeight];
+        if (!isnan(offset)) {
+            return offset;
+        }
+    }
+
     CGSize contentSize = self.contentSize;
     __block CGFloat offset = 0.0;
 
